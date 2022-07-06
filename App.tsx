@@ -1,6 +1,3 @@
-// Photo by Sharefaith from Pexels
-// Background image: https://www.pexels.com/photo/pink-rose-closeup-photography-1231265/
-
 import React, {useEffect} from 'react';
 import {
   StatusBar,
@@ -31,38 +28,108 @@ const DATA = [...Array(30).keys()].map((_, i) => {
   };
 });
 
+const BG_IMG =
+  'https://static.vecteezy.com/system/resources/previews/001/987/871/original/abstract-black-stripes-diagonal-background-free-vector.jpg';
+
 const SPACING = 20;
 const AVATAR_SIZE = 70;
+const ITEM_SIZE = AVATAR_SIZE + SPACING * 3;
 
-export default function App() {
-  useEffect(() => {
-    console.log(DATA);
-  }, []);
+const App = () => {
+  const scrollY = React.useRef(new Animated.Value(0)).current;
   return (
     <View style={{flex: 1, backgroundColor: '#fff'}}>
-      <FlatList
+      <Image
+        source={{uri: BG_IMG}}
+        style={StyleSheet.absoluteFillObject}
+        blurRadius={80}
+      />
+      <Animated.FlatList
         keyExtractor={item => item.key}
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {useNativeDriver: true},
+        )}
         data={DATA}
+        contentContainerStyle={{
+          padding: SPACING,
+          paddingTop: StatusBar.currentHeight || 42,
+        }}
         renderItem={({item, index}) => {
+          const inputRange = [
+            -1,
+            0,
+            ITEM_SIZE * index,
+            ITEM_SIZE * (index + 2),
+          ];
+          const opacityInputRange = [
+            -1,
+            0,
+            ITEM_SIZE * index,
+            ITEM_SIZE * (index + 0.5),
+          ];
+          const scale = scrollY.interpolate({
+            inputRange,
+            outputRange: [1, 1, 1, 0],
+          });
+          const opacity = scrollY.interpolate({
+            inputRange: opacityInputRange,
+            outputRange: [1, 1, 1, 0],
+          });
           return (
-            <View>
+            <Animated.View
+              style={{
+                flexDirection: 'row',
+                padding: SPACING,
+                marginBottom: SPACING,
+                backgroundColor: '#D162B4',
+                borderRadius: 12,
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: 10,
+                },
+                shadowOpacity: 0.8,
+                shadowRadius: 20,
+                elevation: 5,
+                opacity,
+                transform: [{scale}],
+              }}>
               <Image
                 source={{uri: item.image}}
                 style={{
                   width: AVATAR_SIZE,
                   height: AVATAR_SIZE,
                   borderRadius: AVATAR_SIZE,
+                  marginRight: SPACING / 2,
                 }}
               />
-              <View>
-                <Text>{item.name}</Text>
-                <Text>{item.jobTitle}</Text>
-                <Text>{item.email}</Text>
+              <View style={{width: '80%', paddingRight: 10}}>
+                <Text
+                  numberOfLines={1}
+                  style={{fontSize: 22, fontWeight: '700', color: '#FDDDF5'}}>
+                  {item.name}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={{fontSize: 18, opacity: 0.7, color: '#FDDDF5'}}>
+                  {item.jobTitle}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 18,
+                    opacity: 0.8,
+                    color: '#AF0083',
+                  }}>
+                  {item.email}
+                </Text>
               </View>
-            </View>
+            </Animated.View>
           );
         }}
       />
     </View>
   );
-}
+};
+export default App;
